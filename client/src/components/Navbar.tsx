@@ -41,41 +41,43 @@ export function Navbar() {
     { label: "Contact", href: "/contact" },
   ];
 
-  const isDarkBackground = !isScrolled && !mobileMenuOpen;
+  // On desktop: transparent when at top; on mobile: always solid for readability
+  const isDesktopTransparent = !isScrolled && !mobileMenuOpen;
 
   return (
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        // Mobile always solid; desktop transparent at top
         isScrolled || mobileMenuOpen
           ? "bg-background/95 backdrop-blur-md border-b border-border py-3"
-          : "bg-transparent py-5",
-        isDarkBackground ? "text-white" : "text-foreground"
+          : "bg-background/95 backdrop-blur-md border-b border-border py-3 md:bg-transparent md:backdrop-blur-none md:border-none md:py-5",
+        isDesktopTransparent ? "text-foreground md:text-white" : "text-foreground"
       )}
     >
-      {/* Top gradient strip for readability over hero */}
-      {isDarkBackground && (
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+      {/* Top gradient strip for readability over hero — desktop only */}
+      {isDesktopTransparent && (
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
       )}
-      <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
+      <div className="container mx-auto px-4 md:px-12 flex items-center justify-between relative">
         <Link
           href="/"
-          className="flex items-center gap-3 z-50 relative group"
+          className="flex items-center gap-2 md:gap-3 z-50 relative group flex-1 min-w-0 mr-3 md:flex-none md:mr-0"
         >
           {/* Logo mark */}
           <img
             src="/logo.png"
             alt="Shiv Interiors"
             className={cn(
-              "h-10 w-10 md:h-11 md:w-11 object-contain flex-shrink-0 rounded-sm transition-all duration-300 group-hover:scale-105",
-              isDarkBackground ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] brightness-110" : ""
+              "h-9 w-9 md:h-11 md:w-11 object-contain flex-shrink-0 rounded-sm transition-all duration-300 group-hover:scale-105",
+              isDesktopTransparent ? "md:drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] md:brightness-110" : ""
             )}
           />
           {/* Brand name */}
           <span
             className={cn(
-              "text-xl md:text-2xl tracking-[0.18em] uppercase font-display font-semibold leading-none transition-all",
-              isDarkBackground ? "text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" : "text-foreground"
+              "text-sm sm:text-base md:text-2xl tracking-[0.1em] sm:tracking-[0.14em] md:tracking-[0.18em] uppercase font-display font-semibold leading-none transition-all truncate",
+              isDesktopTransparent ? "text-foreground md:text-white md:drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" : "text-foreground"
             )}
           >
             SHIV INTERIORS
@@ -90,7 +92,7 @@ export function Navbar() {
               href={link.href}
               className={cn(
                 "text-sm lg:text-base font-semibold tracking-[0.2em] uppercase transition-all duration-300 link-underline",
-                isDarkBackground ? "drop-shadow-[0_1px_6px_rgba(0,0,0,1)]" : "",
+                isDesktopTransparent ? "drop-shadow-[0_1px_6px_rgba(0,0,0,1)]" : "",
                 location === link.href
                   ? "opacity-100 text-primary"
                   : "opacity-80 hover:opacity-100 hover:text-primary"
@@ -103,14 +105,14 @@ export function Navbar() {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden z-50 relative"
+          className="md:hidden z-50 relative flex-shrink-0 p-1 -mr-1"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Menu"
         >
           {mobileMenuOpen ? (
-            <X className={cn("w-6 h-6", isDarkBackground && !mobileMenuOpen ? "text-white" : "text-foreground")} />
+            <X className="w-6 h-6 text-black" />
           ) : (
-            <Menu className={cn("w-6 h-6", isDarkBackground ? "text-white" : "text-foreground")} />
+            <Menu className="w-6 h-6 text-black" />
           )}
         </button>
       </div>
@@ -118,23 +120,31 @@ export function Navbar() {
       {/* Mobile Nav Overlay */}
       <div
         className={cn(
-          "fixed inset-0 bg-background z-40 flex flex-col items-center justify-center transition-all duration-500 ease-in-out",
+          "fixed inset-0 z-40 transition-all duration-500 ease-in-out md:hidden",
           mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         )}
       >
-        <nav className="flex flex-col items-center gap-8">
-          {/* Logo in mobile menu */}
-          <div className="flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Shiv Interiors" className="h-12 w-12 object-contain" />
-            <span className="text-xl tracking-[0.18em] uppercase font-display font-semibold text-foreground">SHIV INTERIORS</span>
-          </div>
+        <div
+          className={cn(
+            "absolute inset-0 bg-transparent",
+            mobileMenuOpen ? "opacity-100" : "opacity-0"
+          )}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+        <nav
+          className={cn(
+            "absolute top-0 right-0 h-full w-[82%] max-w-sm bg-transparent text-white px-6 pt-24 pb-10 flex flex-col items-end gap-8 transition-transform duration-500 ease-in-out",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "text-3xl font-display transition-colors duration-300",
-                location === link.href ? "text-primary" : "text-foreground hover:text-primary"
+                "text-3xl font-display transition-colors duration-300 text-right w-full",
+                location === link.href ? "text-primary font-bold" : "text-white hover:text-primary"
               )}
             >
               {link.label}
