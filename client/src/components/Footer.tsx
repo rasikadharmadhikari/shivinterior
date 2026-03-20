@@ -87,9 +87,9 @@ export function Footer() {
                 <li className="flex items-start gap-3 text-background/65 leading-relaxed">
                   <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
                   <span>
-                    S. No, Ganapati Matha, 44/2,<br />
-                    NDA Road, Vitthal Nagar,<br />
-                    Warje, Pune – 411058
+                    21 Prasad Chambers,<br />
+                    Karve Road,<br />
+                    Pune – 411004
                   </span>
                 </li>
                 <li>

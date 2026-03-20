@@ -201,10 +201,11 @@ export default function Home() {
                 alt="KKP Dombivali – completed by Shiv Interiors"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/10" />
+              {/* strong bottom gradient for text legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-8 left-8">
-                <p className="text-white/90 font-display text-lg">KKP Dombivali</p>
-                <p className="text-primary text-sm uppercase tracking-widest mt-1">Residential · Completed 2025</p>
+                <p className="text-white font-display text-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">KKP Dombivali</p>
+                <p className="text-primary text-sm uppercase tracking-widest mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">Residential · Completed 2025</p>
               </div>
             </div>
           </GSAPReveal>
@@ -346,14 +347,14 @@ export default function Home() {
       {/* ── CTA BANNER ──────────────────────────────────────────── */}
       <section className="relative py-28 md:py-36 overflow-hidden bg-background">
         <div className="absolute inset-0">
-          <img src="/site-photos/kkp-room3.jpg" alt="Interior" className="w-full h-full object-cover opacity-15" />
-          <div className="absolute inset-0 bg-foreground/60" />
+          <img src="/site-photos/kkp-room3.jpg" alt="Interior" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-black/75" />
         </div>
         <div className="relative z-10 container mx-auto px-6 md:px-12 text-center">
           <GSAPReveal>
             
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-display text-white leading-tight mb-8">
-              Let's Build Something<br /><span className="italic text-primary">Beautiful Together</span>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-display text-white leading-tight mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+              Let's Build Something<br /><span className="italic text-primary drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Beautiful Together</span>
             </h2>
             <p className="text-white/80 max-w-lg mx-auto mb-10 text-lg md:text-xl leading-relaxed font-light">
               Share your vision with us — we'll handle everything from design to delivery.

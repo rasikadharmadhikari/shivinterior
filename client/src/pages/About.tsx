@@ -99,15 +99,15 @@ export default function About() {
         {/* decorative gold rule */}
         <div className="absolute top-0 left-0 right-0 h-px bg-primary/30" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[680px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
 
           {/* LEFT — photo */}
           <GSAPReveal>
-            <div className="relative h-80 lg:h-full overflow-hidden">
+            <div className="relative h-[26rem] lg:h-full overflow-hidden bg-foreground">
               <img
                 src="/shiv-photo.png"
                 alt="I.D. Shivanand Sutar — Founder, Shiv Interiors"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-[center_10%] scale-[1.08] lg:scale-[1.16] lg:object-[center_8%]"
               />
               {/* subtle gradient into the right panel */}
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-foreground/80" />
@@ -186,12 +186,15 @@ export default function About() {
       <section className="py-24 md:py-32 bg-card">
         <div className="container mx-auto px-6 md:px-12">
           <GSAPReveal>
-            <p className="text-sm tracking-[0.35em] uppercase text-primary mb-4 flex items-center gap-3">
-              <span className="w-6 h-px bg-primary" />Our Process
-            </p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display mb-16">How We Work</h2>
+            <div className="max-w-2xl mb-16 md:mb-20">
+              <p className="text-sm tracking-[0.35em] uppercase text-primary mb-4 flex items-center gap-3">
+                <span className="w-6 h-px bg-primary" />Our Process
+              </p>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-display mb-5">How We Work</h2>
+              
+            </div>
           </GSAPReveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border border-border">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { step: "01", title: "Consult",  desc: "Site visit, requirements & budget discussion — we understand your vision before anything else." },
               { step: "02", title: "Design",   desc: "Curated concepts, precise layouts and material palettes tailored to your lifestyle." },
@@ -199,11 +202,23 @@ export default function About() {
               { step: "04", title: "Handover", desc: "Final walkthrough, snagging list, and full project closure on your schedule." },
             ].map((item, i) => (
               <GSAPReveal key={i} delay={i * 0.1}>
-                <div className="group p-8 md:p-10 border-r border-border last:border-r-0 hover:bg-background transition-colors duration-300 min-h-[280px] flex flex-col justify-between">
-                  <p className="text-6xl font-display text-primary/15 group-hover:text-primary/35 transition-colors duration-300 leading-none mb-8">{item.step}</p>
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-display mb-3 group-hover:text-primary transition-colors duration-300">{item.title}</h3>
-                    <p className="text-base text-muted-foreground leading-relaxed">{item.desc}</p>
+                <div className={`group flex min-h-[280px] flex-col rounded-[1.75rem] border border-border bg-background p-8 md:p-9 shadow-[0_18px_50px_rgba(56,40,28,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/35 hover:shadow-[0_24px_70px_rgba(56,40,28,0.12)] ${i % 2 === 1 ? "lg:translate-y-8" : ""}`}>
+                  <div className="mb-10 flex items-start justify-between gap-4">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-primary/25 text-sm font-medium tracking-[0.2em] text-primary">
+                      {item.step}
+                    </span>
+                    <span className="pt-3 text-[0.65rem] uppercase tracking-[0.35em] text-foreground/35">
+                      Step {item.step}
+                    </span>
+                  </div>
+                  <div className="mt-auto">
+                    <h3 className="text-2xl md:text-[2rem] font-display text-foreground mb-3">
+                      {item.title}
+                    </h3>
+                    <div className="mb-5 h-px w-12 bg-primary/45 transition-all duration-300 group-hover:w-20" />
+                    <p className="text-base leading-relaxed text-foreground/68">
+                      {item.desc}
+                    </p>
                   </div>
                 </div>
               </GSAPReveal>
@@ -347,6 +362,30 @@ export default function About() {
             <p className="text-center text-xs text-muted-foreground mt-6">
               * Prices are indicative and may vary based on site conditions, materials and scope. Final quote after site visit.
             </p>
+          </GSAPReveal>
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ──────────────────────────────────────────── */}
+      <section className="relative py-28 md:py-36 overflow-hidden bg-background">
+        <div className="absolute inset-0">
+          <img src="/site-photos/hiremath-office.jpg" alt="Modern office interior" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-black/75" />
+        </div>
+        <div className="relative z-10 container mx-auto px-6 md:px-12 text-center">
+          <GSAPReveal>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-display text-white leading-tight mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+              Ready To Shape Your<br />
+              <span className="italic text-primary drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Next Interior Project?</span>
+            </h2>
+            <p className="text-white/80 max-w-lg mx-auto mb-10 text-lg md:text-xl leading-relaxed font-light">
+              Tell us about your home, office, or commercial space and our team will help you plan the right design, budget, and execution approach.
+            </p>
+            <div className="flex justify-center">
+              <Link href="/contact" className="btn-shimmer inline-flex items-center gap-3 px-10 py-4 bg-primary text-primary-foreground uppercase tracking-widest text-sm font-semibold hover:bg-primary/85 transition group">
+                Contact Us <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </GSAPReveal>
         </div>
       </section>

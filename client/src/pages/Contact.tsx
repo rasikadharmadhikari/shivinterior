@@ -117,8 +117,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Visit Us</p>
-                    <p className="font-medium text-foreground">S. No, Ganapati Matha, 44/2, NDA Road</p>
-                    <p className="text-sm text-muted-foreground">Vitthal Nagar, Warje, Pune – 411058</p>
+                    <p className="font-medium text-foreground">21 Prasad Chambers, Karve Road</p>
+                    <p className="text-sm text-muted-foreground">Pune – 411004</p>
                   </div>
                 </div>
               </GSAPReveal>
@@ -268,11 +268,11 @@ export default function Contact() {
               <p className="font-display text-xl text-background mb-1">SHIV INTERIORS</p>
               <div className="w-8 h-px bg-primary/40 my-3" />
               <p className="text-sm text-background/65 leading-relaxed">
-                Ganapati Matha, 44/2, NDA Road<br />
-                Vitthal Nagar, Warje, Pune – 411058
+                21 Prasad Chambers, Karve Road<br />
+                Pune – 411004
               </p>
               <a
-                href="https://www.google.com/maps/search/SHIV+INTERIORS,+44%2F2,+NDA+Rd,+Vitthal+Nagar,+Warje,+Pune,+Maharashtra+411058"
+                href="https://www.google.com/maps/search/21+Prasad+Chambers+Karve+Road+Pune+411004"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 mt-4 text-[11px] uppercase tracking-[0.25em] text-primary hover:text-background transition group"

@@ -62,17 +62,8 @@ export function Navbar() {
       <div className="container mx-auto px-4 md:px-12 flex items-center justify-between relative">
         <Link
           href="/"
-          className="flex items-center gap-2 md:gap-3 z-50 relative group flex-1 min-w-0 mr-3 md:flex-none md:mr-0"
+          className="flex items-center z-50 relative group flex-1 min-w-0 mr-3 md:flex-none md:mr-0"
         >
-          {/* Logo mark */}
-          <img
-            src="/logo.png"
-            alt="Shiv Interiors"
-            className={cn(
-              "h-9 w-9 md:h-11 md:w-11 object-contain flex-shrink-0 rounded-sm transition-all duration-300 group-hover:scale-105",
-              isDesktopTransparent ? "md:drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] md:brightness-110" : ""
-            )}
-          />
           {/* Brand name */}
           <span
             className={cn(
