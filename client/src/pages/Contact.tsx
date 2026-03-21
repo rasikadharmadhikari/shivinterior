@@ -6,7 +6,7 @@ import { useSubmitContact } from "@/hooks/use-contact";
 import { GSAPReveal } from "@/components/GSAPReveal";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Phone, MapPin, ArrowRight, Facebook, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Loader2, Phone, MapPin, ArrowRight, Facebook, ChevronLeft, ChevronRight, Check, User, Mail, MessageSquare } from "lucide-react";
 import { z } from "zod";
 
 type ContactFormData = z.infer<typeof insertContactMessageSchema>;
@@ -93,6 +93,31 @@ export default function Contact() {
 
   const setAnswer = (key: keyof typeof answers, value: string) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const progressPercentage = Math.round((currentStep / 5) * 100);
+  const messageValue = form.watch("message") || "";
+  const messageSuggestions = [
+    "I have floor plan drawings ready.",
+    "Please schedule a site visit this week.",
+    "I need design plus full execution support.",
+  ];
+
+  const getOptionButtonClass = (isSelected: boolean) =>
+    `group text-left px-4 py-3 rounded-xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+      isSelected
+        ? "bg-foreground text-background border-foreground shadow-[0_10px_24px_-18px_hsl(var(--foreground)/0.9)]"
+        : "bg-background/95 text-foreground border-border hover:border-primary/60 hover:bg-primary/5"
+    }`;
+
+  const appendMessageSuggestion = (note: string) => {
+    const current = form.getValues("message")?.trim() || "";
+    const nextMessage = current ? `${current}\n${note}` : note;
+    form.setValue("message", nextMessage, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
   const onSubmit = (data: ContactFormData) => {
@@ -244,21 +269,43 @@ export default function Contact() {
             <div className="lg:col-span-3">
               <GSAPReveal delay={0.2}>
                 <div className="relative">
-                  <div className="h-1 w-16 bg-primary mb-0" />
-                  <div className="bg-card border border-border p-8 md:p-12">
-                    <h2 className="text-3xl font-display mb-2">Tell Us About Your Project</h2>
-                    <p className="text-muted-foreground mb-8">
-                      A quick 5-step form so we can suggest the right interior plan for your needs.
-                    </p>
+                  <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
+                  <div className="relative bg-card/90 border border-border backdrop-blur-sm p-6 md:p-10 overflow-hidden">
+                    <div className="h-1.5 w-24 bg-gradient-to-r from-primary via-primary/60 to-transparent mb-4" />
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-7">
+                      <div>
+                        <h2 className="text-3xl font-display mb-1">Tell Us About Your Project</h2>
+                        <p className="text-muted-foreground text-sm md:text-base">
+                          Guided 5-step planner. Most clients finish this in under 60 seconds.
+                        </p>
+                      </div>
+                      <div className="shrink-0 px-3 py-1.5 rounded-full bg-background border border-border text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                        Step {currentStep} of 5
+                      </div>
+                    </div>
 
-                    <div className="mb-8 flex items-center gap-2 sm:gap-3">
+                    <div className="mb-8">
+                      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                        <span>Progress</span>
+                        <span>{progressPercentage}%</span>
+                      </div>
+                      <div className="h-2 bg-background border border-border rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-foreground transition-all duration-500"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-8 flex items-center gap-1.5 sm:gap-3 overflow-x-auto pb-1">
                       {[1, 2, 3, 4, 5].map((step) => {
                         const isCompleted = step < currentStep;
                         const isActive = step === currentStep;
                         return (
-                          <div key={step} className="flex items-center gap-2 sm:gap-3">
+                          <div key={step} className="flex items-center gap-1.5 sm:gap-3 min-w-max">
                             <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border transition ${
+                              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold border transition ${
                                 isCompleted
                                   ? "bg-primary border-primary text-primary-foreground"
                                   : isActive
@@ -268,7 +315,7 @@ export default function Contact() {
                             >
                               {isCompleted ? <Check className="w-4 h-4" /> : step}
                             </div>
-                            {step !== 5 && <div className="w-6 sm:w-10 h-px bg-border" />}
+                            {step !== 5 && <div className="w-8 sm:w-12 h-px bg-border" />}
                           </div>
                         );
                       })}
@@ -287,11 +334,7 @@ export default function Contact() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setAnswer("service", opt.value)}
-                                className={`text-left px-4 py-3 border transition ${
-                                  answers.service === opt.value
-                                    ? "bg-foreground text-background border-foreground"
-                                    : "bg-background text-foreground border-border hover:border-primary/60"
-                                }`}
+                                className={getOptionButtonClass(answers.service === opt.value)}
                               >
                                 <span className="inline-flex items-center gap-2">
                                   <span>{opt.emoji}</span>
@@ -315,11 +358,7 @@ export default function Contact() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setAnswer("spaces", opt.value)}
-                                className={`text-left px-4 py-3 border transition ${
-                                  answers.spaces === opt.value
-                                    ? "bg-foreground text-background border-foreground"
-                                    : "bg-background text-foreground border-border hover:border-primary/60"
-                                }`}
+                                className={getOptionButtonClass(answers.spaces === opt.value)}
                               >
                                 <span className="inline-flex items-center gap-2">
                                   <span>{opt.emoji}</span>
@@ -343,11 +382,7 @@ export default function Contact() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setAnswer("style", opt.value)}
-                                className={`text-left px-4 py-3 border transition ${
-                                  answers.style === opt.value
-                                    ? "bg-foreground text-background border-foreground"
-                                    : "bg-background text-foreground border-border hover:border-primary/60"
-                                }`}
+                                className={getOptionButtonClass(answers.style === opt.value)}
                               >
                                 <span className="inline-flex items-center gap-2">
                                   <span>{opt.emoji}</span>
@@ -374,11 +409,7 @@ export default function Contact() {
                                   key={opt.value}
                                   type="button"
                                   onClick={() => setAnswer("budget", opt.value)}
-                                  className={`text-left px-4 py-3 border transition ${
-                                    answers.budget === opt.value
-                                      ? "bg-foreground text-background border-foreground"
-                                      : "bg-background text-foreground border-border hover:border-primary/60"
-                                  }`}
+                                  className={getOptionButtonClass(answers.budget === opt.value)}
                                 >
                                   <span className="inline-flex items-center gap-2">
                                     <span>{opt.emoji}</span>
@@ -397,11 +428,7 @@ export default function Contact() {
                                   key={opt.value}
                                   type="button"
                                   onClick={() => setAnswer("timeline", opt.value)}
-                                  className={`text-left px-4 py-3 border transition ${
-                                    answers.timeline === opt.value
-                                      ? "bg-foreground text-background border-foreground"
-                                      : "bg-background text-foreground border-border hover:border-primary/60"
-                                  }`}
+                                  className={getOptionButtonClass(answers.timeline === opt.value)}
                                 >
                                   <span className="inline-flex items-center gap-2">
                                     <span>{opt.emoji}</span>
@@ -420,11 +447,7 @@ export default function Contact() {
                                   key={opt.value}
                                   type="button"
                                   onClick={() => setAnswer("urgency", opt.value)}
-                                  className={`text-left px-4 py-3 border transition ${
-                                    answers.urgency === opt.value
-                                      ? "bg-foreground text-background border-foreground"
-                                      : "bg-background text-foreground border-border hover:border-primary/60"
-                                  }`}
+                                  className={getOptionButtonClass(answers.urgency === opt.value)}
                                 >
                                   <span className="inline-flex items-center gap-2">
                                     <span>{opt.emoji}</span>
@@ -444,16 +467,36 @@ export default function Contact() {
                             <p className="text-muted-foreground">Share your details so our design team can connect with you.</p>
                           </div>
 
+                          <div className="rounded-xl border border-border bg-background/70 p-4 md:p-5">
+                            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">Quick Add Notes</p>
+                            <div className="flex flex-wrap gap-2">
+                              {messageSuggestions.map((item) => (
+                                <button
+                                  key={item}
+                                  type="button"
+                                  onClick={() => appendMessageSuggestion(item)}
+                                  className="px-3 py-1.5 text-xs md:text-sm rounded-full border border-border hover:border-primary/50 hover:bg-primary/10 transition"
+                                >
+                                  + {item}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                                 Name *
                               </label>
-                              <input
-                                {...form.register("name")}
-                                className="w-full bg-background border border-border px-4 py-3 text-sm placeholder:text-muted-foreground/60"
-                                placeholder="Your full name"
-                              />
+                              <div className="relative">
+                                <User className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <input
+                                  {...form.register("name")}
+                                  autoComplete="name"
+                                  className="w-full bg-background border border-border pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                  placeholder="Your full name"
+                                />
+                              </div>
                               {form.formState.errors.name && (
                                 <p className="text-destructive text-xs mt-1.5">{form.formState.errors.name.message}</p>
                               )}
@@ -462,12 +505,16 @@ export default function Contact() {
                               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                                 Email *
                               </label>
-                              <input
-                                {...form.register("email")}
-                                type="email"
-                                className="w-full bg-background border border-border px-4 py-3 text-sm placeholder:text-muted-foreground/60"
-                                placeholder="you@example.com"
-                              />
+                              <div className="relative">
+                                <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <input
+                                  {...form.register("email")}
+                                  type="email"
+                                  autoComplete="email"
+                                  className="w-full bg-background border border-border pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                  placeholder="you@example.com"
+                                />
+                              </div>
                               {form.formState.errors.email && (
                                 <p className="text-destructive text-xs mt-1.5">{form.formState.errors.email.message}</p>
                               )}
@@ -478,12 +525,18 @@ export default function Contact() {
                             <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                               Phone Number *
                             </label>
-                            <input
-                              {...form.register("phone")}
-                              type="tel"
-                              className="w-full bg-background border border-border px-4 py-3 text-sm placeholder:text-muted-foreground/60"
-                              placeholder="+91 98765 43210"
-                            />
+                            <div className="relative">
+                              <Phone className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <input
+                                {...form.register("phone")}
+                                type="tel"
+                                autoComplete="tel"
+                                inputMode="tel"
+                                className="w-full bg-background border border-border pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                placeholder="+91 98765 43210"
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1.5">Include country code for faster callback.</p>
                             {form.formState.errors.phone && (
                               <p className="text-destructive text-xs mt-1.5">{form.formState.errors.phone.message}</p>
                             )}
@@ -491,14 +544,21 @@ export default function Contact() {
 
                           <div>
                             <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                              Anything Else?
+                              Project Notes *
                             </label>
-                            <textarea
-                              {...form.register("message")}
-                              rows={5}
-                              className="w-full bg-background border border-border px-4 py-3 text-sm resize-none placeholder:text-muted-foreground/60"
-                              placeholder="Special requirements, preferred site location, references, or any additional note"
-                            />
+                            <div className="relative">
+                              <MessageSquare className="w-4 h-4 text-muted-foreground absolute left-3 top-4 pointer-events-none" />
+                              <textarea
+                                {...form.register("message")}
+                                rows={5}
+                                className="w-full bg-background border border-border pl-10 pr-4 py-3 text-sm resize-none placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                placeholder="Share room size, location, preferred materials, or inspiration links"
+                              />
+                            </div>
+                            <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Minimum 5 characters</span>
+                              <span>{messageValue.trim().length} chars</span>
+                            </div>
                             {form.formState.errors.message && (
                               <p className="text-destructive text-xs mt-1.5">{form.formState.errors.message.message}</p>
                             )}
@@ -506,12 +566,12 @@ export default function Contact() {
                         </div>
                       )}
 
-                      <div className="pt-3 border-t border-border flex items-center justify-between gap-4">
+                      <div className="pt-4 border-t border-border flex items-center justify-between gap-4">
                         <button
                           type="button"
                           onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
                           disabled={currentStep === 1 || isPending}
-                          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <ChevronLeft className="w-4 h-4" /> Back
                         </button>
@@ -521,7 +581,7 @@ export default function Contact() {
                             type="button"
                             onClick={() => setCurrentStep((prev) => Math.min(5, prev + 1))}
                             disabled={!canGoNext()}
-                            className="inline-flex items-center gap-2 px-7 py-3 bg-foreground text-background uppercase tracking-[0.2em] text-sm transition hover:bg-primary disabled:opacity-45 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-2 px-7 py-3 rounded-md bg-foreground text-background uppercase tracking-[0.2em] text-sm transition hover:bg-primary disabled:opacity-45 disabled:cursor-not-allowed"
                           >
                             Next <ChevronRight className="w-4 h-4" />
                           </button>
@@ -529,7 +589,7 @@ export default function Contact() {
                           <button
                             type="submit"
                             disabled={isPending || !form.formState.isValid}
-                            className="inline-flex items-center gap-2 px-7 py-3 bg-primary text-primary-foreground uppercase tracking-[0.2em] text-sm transition hover:bg-foreground disabled:opacity-45 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-2 px-7 py-3 rounded-md bg-primary text-primary-foreground uppercase tracking-[0.2em] text-sm transition hover:bg-foreground disabled:opacity-45 disabled:cursor-not-allowed"
                           >
                             {isPending ? (
                               <><Loader2 className="w-4 h-4 animate-spin" /> Sending</>
