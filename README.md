@@ -94,12 +94,26 @@
       ```env
       DATABASE_URL=postgresql://user:password@localhost:5432/elegance_studio
       NODE_ENV=development
+      # Mail configuration (required for consultation form emails)
+      GMAIL_USER=your_gmail_address@gmail.com
+      GMAIL_APP_PASSWORD=your_gmail_app_password
+      CONTACT_RECEIVER_EMAIL=rasikaa0818@gmail.com
+      ```
+
+      You can also use SMTP instead of Gmail:
+      ```env
+      SMTP_HOST=smtp.your-provider.com
+      SMTP_PORT=587
+      SMTP_USER=your_smtp_username
+      SMTP_PASS=your_smtp_password
+      SMTP_FROM_EMAIL=your_sender_email@domain.com
       ```
 
    4. **Run database migrations**
       ```bash
       npm run db:push
       ```
+      This step is required after pulling the latest code because `contact_messages` now includes a `phone` column.
 
    5. **Start development server**
       ```bash

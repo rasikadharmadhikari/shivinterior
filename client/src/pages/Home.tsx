@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, CheckCircle, Award, Clock, Users, Home as Hom
 import { GSAPReveal } from "@/components/GSAPReveal";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { useProjects } from "@/hooks/use-projects";
+import { LandingConsultationModal } from "@/components/LandingConsultationModal";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export default function Home() {
 
   return (
     <div className="w-full overflow-x-hidden">
+      <LandingConsultationModal />
 
       {/* ── HERO ────────────────────────────────────────────────── */}
       <section className="relative flex items-end overflow-hidden" style={{minHeight:'100svh'}}>

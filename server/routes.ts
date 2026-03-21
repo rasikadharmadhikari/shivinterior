@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { sendConsultationEmail } from "./mailer";
 
 async function seedDatabase() {
   try {
@@ -62,6 +63,7 @@ export async function registerRoutes(
     try {
       const input = api.contact.create.input.parse(req.body);
       const message = await storage.createContactMessage(input);
+      await sendConsultationEmail(input);
       res.status(201).json(message);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -69,6 +71,9 @@ export async function registerRoutes(
           message: err.errors[0].message,
           field: err.errors[0].path.join('.'),
         });
+      }
+      if (err instanceof Error && err.message.toLowerCase().includes("email")) {
+        return res.status(500).json({ message: err.message });
       }
       res.status(500).json({ message: "Failed to submit contact message" });
     }
