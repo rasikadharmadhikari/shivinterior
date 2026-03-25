@@ -3,12 +3,22 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { config } from "dotenv";
+import cors from "cors";
 
 // Load environment variables from .env file
 config();
 
 const app = express();
 const httpServer = createServer(app);
+
+// Configure CORS
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || ["http://localhost:5000", "http://localhost:5173"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 declare module "http" {
   interface IncomingMessage {
