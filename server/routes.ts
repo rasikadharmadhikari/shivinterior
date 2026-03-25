@@ -63,7 +63,14 @@ export async function registerRoutes(
     try {
       const input = api.contact.create.input.parse(req.body);
       const message = await storage.createContactMessage(input);
-      await sendConsultationEmail(input);
+      
+      // Attempt to send email, but don't fail if it's not configured
+      try {
+        await sendConsultationEmail(input);
+      } catch (emailErr) {
+        console.warn("Email notification not sent:", emailErr instanceof Error ? emailErr.message : String(emailErr));
+      }
+      
       res.status(201).json(message);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -71,9 +78,6 @@ export async function registerRoutes(
           message: err.errors[0].message,
           field: err.errors[0].path.join('.'),
         });
-      }
-      if (err instanceof Error && err.message.toLowerCase().includes("email")) {
-        return res.status(500).json({ message: err.message });
       }
       res.status(500).json({ message: "Failed to submit contact message" });
     }
