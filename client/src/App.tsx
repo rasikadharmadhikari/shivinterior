@@ -18,6 +18,8 @@ import About from "@/pages/About";
 import Projects from "@/pages/Projects";
 import Contact from "@/pages/Contact";
 import Testimonials from "@/pages/Testimonials";
+import { AdminLogin } from "@/pages/AdminLogin";
+import { AdminDashboard } from "@/pages/AdminDashboard";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -91,18 +93,32 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       <VectorPreloader visible={isRouteLoading} />
       <ScrollToTop />
-      <Navbar />
-      <main className="flex-grow">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/about" component={About} />
-          <Route path="/projects" component={Projects} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/testimonials" component={Testimonials} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <Footer />
+      <Switch>
+        <Route path="/admin/dashboard">
+          {() => <AdminDashboard />}
+        </Route>
+        <Route path="/admin">
+          {() => <AdminLogin />}
+        </Route>
+        <Route>
+          {() => (
+            <>
+              <Navbar />
+              <main className="flex-grow">
+                <Switch>
+                  <Route path="/" component={Home} />
+                  <Route path="/about" component={About} />
+                  <Route path="/projects" component={Projects} />
+                  <Route path="/contact" component={Contact} />
+                  <Route path="/testimonials" component={Testimonials} />
+                  <Route component={NotFound} />
+                </Switch>
+              </main>
+              <Footer />
+            </>
+          )}
+        </Route>
+      </Switch>
     </div>
   );
 }
