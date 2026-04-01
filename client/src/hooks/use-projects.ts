@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@shared/routes";
 
 export function useProjects() {
   return useQuery({
-    queryKey: [api.projects.list.path],
+    queryKey: ["projects"],
     queryFn: async () => {
-      const res = await fetch(api.projects.list.path, { credentials: "include" });
+      const res = await fetch("/api/projects", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch projects");
       const data = await res.json();
-      return api.projects.list.responses[200].parse(data);
+      return Array.isArray(data) ? data : [];
     },
   });
 }

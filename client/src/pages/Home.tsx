@@ -1,41 +1,21 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import gsap from "gsap";
-import { ArrowRight, ArrowUpRight, CheckCircle, Award, Clock, Users, Home as HomeIcon, MoveDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CheckCircle, Award, Clock, Users, Home as HomeIcon, MoveDown, ExternalLink } from "lucide-react";
 import { GSAPReveal } from "@/components/GSAPReveal";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { useProjects } from "@/hooks/use-projects";
 import { LandingConsultationModal } from "@/components/LandingConsultationModal";
+import { ProjectDetailModal } from "@/pages/ProjectDetailModal";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const updateScrollState = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 1);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
-  };
-
-  const scrollProjects = (dir: "left" | "right") => {
-    if (!scrollRef.current) return;
-    const amount = scrollRef.current.offsetWidth * 0.75;
-    scrollRef.current.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
-  };
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const { data: projects = [], isLoading } = useProjects();
-  const featuredProjects = projects.slice(0, 6);
-
-  // Re-check arrow visibility after projects load
-  useEffect(() => {
-    if (!isLoading) setTimeout(updateScrollState, 50);
-  }, [isLoading]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -253,7 +233,7 @@ export default function Home() {
       {/* ── SELECTED PROJECTS ───────────────────────────────────── */}
       <section className="py-24 md:py-32 bg-card">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex justify-between items-end mb-14">
+          <div className="flex justify-between items-end mb-16">
             <GSAPReveal>
               <p className="text-sm tracking-[0.3em] uppercase text-primary mb-3 flex items-center gap-3">
                 <span className="w-6 h-px bg-primary" />Our Work
@@ -262,81 +242,100 @@ export default function Home() {
             </GSAPReveal>
             <GSAPReveal delay={0.2}>
               <Link href="/projects" className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest hover:text-primary transition group">
-                View All <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                Explore All <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
             </GSAPReveal>
           </div>
 
-          {/* ── ARROW-CONTROLLED SCROLL STRIP ── */}
-          <div className="relative">
-
-            {/* left arrow — only when not at start */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scrollProjects("left")}
-                className="absolute left-0 top-1/2 -translate-y-8 z-10 w-11 h-11 flex items-center justify-center bg-background border border-border hover:border-primary hover:text-primary transition-all shadow-md -translate-x-5 animate-in fade-in duration-200"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* right arrow — only when more content to the right */}
-            {canScrollRight && (
-              <button
-                onClick={() => scrollProjects("right")}
-                className="absolute right-0 top-1/2 -translate-y-8 z-10 w-11 h-11 flex items-center justify-center bg-background border border-border hover:border-primary hover:text-primary transition-all shadow-md translate-x-5 animate-in fade-in duration-200"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* scrollable strip */}
-            {isLoading ? (
-              <div className="flex gap-6">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="flex-shrink-0 w-72">
-                    <div className="aspect-[3/4] bg-muted animate-pulse" />
-                    <div className="h-5 bg-muted rounded mt-4 w-3/4" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div
-                ref={scrollRef}
-                onScroll={updateScrollState}
-                className="overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                <div className="flex gap-6 min-w-max">
-                  {featuredProjects.map((project) => (
-                    <div key={project.id} className="flex-shrink-0 w-72 md:w-80 group cursor-pointer">
-                      <div className="aspect-[3/4] overflow-hidden">
-                        <img
-                          src={project.imageUrl}
-                          alt={project.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
+          {/* 4-Project Grid */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex flex-col">
+                  <div className="aspect-[3/4] bg-muted animate-pulse rounded-lg mb-4" />
+                  <div className="h-6 bg-muted rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-muted/60 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg">No projects added yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {projects.slice(0, 4).map((project, index) => (
+                <GSAPReveal key={project._id || index} delay={index * 0.1}>
+                  <div 
+                    onClick={() => setSelectedProject(project)}
+                    className="group flex flex-col h-full cursor-pointer"
+                  >
+                    {/* Thumbnail Container */}
+                    <div className="relative overflow-hidden rounded-lg mb-4 aspect-[3/4] bg-muted">
+                      <img
+                        src={project.thumbnail}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      {/* Overlay with icon on hover */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+                            <ExternalLink className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                       </div>
-                      <div className="pt-4 pb-2 border-b border-border">
-                        <h3 className="text-lg md:text-xl font-display leading-snug group-hover:text-primary transition-colors duration-300">
-                          {project.title}
-                        </h3>
-                        <p className="text-sm uppercase tracking-[0.15em] text-primary/80 mt-1">{project.category}</p>
+
+                      {/* Before/After Badge */}
+                      {(project.beforeImages?.length > 0 || project.afterImages?.length > 0) && (
+                        <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+                          {(project.beforeImages?.length || 0) + (project.afterImages?.length || 0)} images
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Project Info */}
+                    <div className="border-b border-border pb-3">
+                      <h3 className="text-lg md:text-xl font-display leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
+                        {project.title}
+                      </h3>
+                      <p className="text-sm uppercase tracking-[0.15em] text-primary/80 mt-2">
+                        {project.projectType || 'Project'}
+                      </p>
+                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        {project.location && (
+                          <>
+                            <span>📍 {project.location}</span>
+                            {project.year && <span> · {project.year}</span>}
+                          </>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
 
-          <div className="mt-10">
+                    {/* Description - Optional */}
+                    <p className="text-sm text-muted-foreground mt-3 line-clamp-2 flex-grow">
+                      {project.description}
+                    </p>
+                  </div>
+                </GSAPReveal>
+              ))}
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="mt-14 flex flex-col sm:flex-row justify-center gap-4">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-3 text-sm uppercase tracking-widest text-primary group"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-primary text-primary hover:bg-primary hover:text-primary-foreground uppercase tracking-widest text-sm font-semibold transition-all duration-300 group rounded-lg"
             >
               View All Projects
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-widest text-sm font-semibold transition-all duration-300 group rounded-lg"
+            >
+              Start Your Project
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -373,6 +372,18 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          projects={projects}
+          onClose={() => setSelectedProject(null)}
+          onNavigate={(projectId) => {
+            const foundProject = projects.find((p) => p._id === projectId);
+            if (foundProject) setSelectedProject(foundProject);
+          }}
+        />
+      )}
     </div>
   );
 }

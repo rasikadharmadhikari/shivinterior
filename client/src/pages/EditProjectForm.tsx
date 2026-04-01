@@ -1,22 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Upload, Trash2 } from 'lucide-react';
 
-export function AddProjectForm({ onClose }: { onClose: () => void }) {
+interface EditProjectFormProps {
+  project: any;
+  onClose: () => void;
+  onSuccess: (updatedProject: any) => void;
+}
+
+export function EditProjectForm({ project, onClose, onSuccess }: EditProjectFormProps) {
   const [formData, setFormData] = useState({
-    projectName: '',
-    projectType: 'Residential',
+    projectName: project.title,
+    projectType: project.projectType || project.category || 'Residential',
     customProjectType: '',
-    description: '',
-    location: '',
-    year: '',
+    description: project.description,
+    location: project.location,
+    year: project.year || '',
   });
 
   const [featureImage, setFeatureImage] = useState<{ file: File; preview: string } | null>(null);
   const [beforeImages, setBeforeImages] = useState<{ file: File; preview: string }[]>([]);
   const [afterImages, setAfterImages] = useState<{ file: File; preview: string }[]>([]);
+  
+  // Track existing images
+  const [currentThumbnail, setCurrentThumbnail] = useState<string | null>(project.thumbnail || null);
+  const [currentBeforeImages, setCurrentBeforeImages] = useState<string[]>(project.beforeImages || []);
+  const [currentAfterImages, setCurrentAfterImages] = useState<string[]>(project.afterImages || []);
+
+  // Track removed images
+  const [removedBeforeImages, setRemovedBeforeImages] = useState<string[]>([]);
+  const [removedAfterImages, setRemovedAfterImages] = useState<string[]>([]);
+  const [removedThumbnail, setRemovedThumbnail] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Reset removal tracking when modal closes or new project is opened
+  useEffect(() => {
+    return () => {
+      setRemovedBeforeImages([]);
+      setRemovedAfterImages([]);
+      setRemovedThumbnail(false);
+    };
+  }, [project._id]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -88,6 +114,21 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
     });
   };
 
+  const removeExistingBeforeImage = (imageUrl: string) => {
+    setRemovedBeforeImages((prev) => [...prev, imageUrl]);
+    setCurrentBeforeImages((prev) => prev.filter((url) => url !== imageUrl));
+  };
+
+  const removeExistingAfterImage = (imageUrl: string) => {
+    setRemovedAfterImages((prev) => [...prev, imageUrl]);
+    setCurrentAfterImages((prev) => prev.filter((url) => url !== imageUrl));
+  };
+
+  const removeExistingThumbnail = () => {
+    setRemovedThumbnail(true);
+    setCurrentThumbnail(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -96,10 +137,6 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
     // Validation
     if (!formData.projectName.trim()) {
       setError('Project name is required');
-      return;
-    }
-    if (!featureImage) {
-      setError('Featured image is required');
       return;
     }
     if (!formData.description.trim()) {
@@ -118,6 +155,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
       setError('Please enter a custom project type');
       return;
     }
+
     setIsLoading(true);
 
     try {
@@ -130,32 +168,52 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
       payload.append('location', formData.location.trim());
       payload.append('year', formData.year);
       payload.append('description', formData.description.trim());
-      payload.append('thumbnail', featureImage.file);
 
-      beforeImages.forEach((image) => {
-        payload.append('beforeImages', image.file);
-      });
+      // Only append thumbnail if a new one was selected
+      if (featureImage) {
+        payload.append('thumbnail', featureImage.file);
+      }
 
-      afterImages.forEach((image) => {
-        payload.append('afterImages', image.file);
-      });
+      // Only append beforeImages if new ones were selected
+      if (beforeImages.length > 0) {
+        beforeImages.forEach((image) => {
+          payload.append('beforeImages', image.file);
+        });
+      }
 
-      const response = await fetch('/api/projects', {
-        method: 'POST',
+      // Only append afterImages if new ones were selected
+      if (afterImages.length > 0) {
+        afterImages.forEach((image) => {
+          payload.append('afterImages', image.file);
+        });
+      }
+
+      // Append tracking for removed/kept images
+      payload.append('removedBeforeImages', JSON.stringify(removedBeforeImages));
+      payload.append('removedAfterImages', JSON.stringify(removedAfterImages));
+      payload.append('removedThumbnail', removedThumbnail.toString());
+      payload.append('keepBeforeImages', JSON.stringify(currentBeforeImages));
+      payload.append('keepAfterImages', JSON.stringify(currentAfterImages));
+
+      const response = await fetch(`/api/projects/${project._id}`, {
+        method: 'PUT',
         body: payload,
       });
 
       if (!response.ok) {
         const result = await response.json().catch(() => null);
-        throw new Error(result?.message || 'Failed to create project.');
+        throw new Error(result?.message || 'Failed to update project.');
       }
 
+      const updatedProject = await response.json();
       setSuccess(true);
+      
       setTimeout(() => {
-        window.location.reload();
-      }, 1200);
+        onSuccess(updatedProject);
+        onClose();
+      }, 800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to update project. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +240,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
         <h3 className="text-2xl font-display tracking-wider text-foreground mb-2">
           Success!
         </h3>
-        <p className="text-foreground/60">Project has been created successfully.</p>
+        <p className="text-foreground/60">Project has been updated successfully.</p>
       </div>
     );
   }
@@ -192,7 +250,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
       {/* Header */}
       <div className="flex items-center justify-between p-6 md:p-8 border-b border-primary/10">
         <h2 className="text-2xl md:text-3xl font-display tracking-wider text-foreground">
-          Add New Project
+          Edit Project
         </h2>
         <button
           onClick={onClose}
@@ -231,14 +289,36 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
         {/* Featured Image */}
         <div className="group">
           <label className="block text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-3 ml-1">
-            Featured Image (Thumbnail) *
+            Featured Image (Thumbnail)
           </label>
-          
+
+          {/* Current Image */}
+          {!featureImage && !removedThumbnail && currentThumbnail && (
+            <div className="mb-4">
+              <p className="text-xs text-foreground/50 mb-2">Current thumbnail:</p>
+              <div className="relative rounded-lg overflow-hidden border border-primary/15 hover:border-primary/40 transition-all duration-300 group">
+                <img
+                  src={currentThumbnail}
+                  alt="Current thumbnail"
+                  className="w-full h-48 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeExistingThumbnail}
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
+                >
+                  <Trash2 className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* New Image or Upload */}
           {featureImage ? (
             <div className="relative rounded-lg overflow-hidden border border-primary/15 hover:border-primary/40 transition-all duration-300 group">
               <img
                 src={featureImage.preview}
-                alt="Featured"
+                alt="New thumbnail"
                 className="w-full h-48 object-cover"
               />
               <button
@@ -256,10 +336,10 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                 accept="image/*"
                 onChange={handleFeatureImageChange}
                 className="hidden"
-                id="feature-image-upload"
+                id="edit-feature-image-upload"
               />
               <label
-                htmlFor="feature-image-upload"
+                htmlFor="edit-feature-image-upload"
                 className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 hover:bg-secondary/30 cursor-pointer transition-all duration-300"
               >
                 <div className="text-center">
@@ -267,7 +347,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                     <Upload className="w-5 h-5 text-primary" />
                   </div>
                   <p className="text-sm font-semibold text-foreground mb-1">
-                    Click to upload featured image
+                    Click to replace featured image
                   </p>
                   <p className="text-xs text-foreground/50">PNG, JPG, GIF up to 10MB</p>
                 </div>
@@ -296,7 +376,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
           </select>
         </div>
 
-        {/* Custom Project Type (shown when "Other" is selected) */}
+        {/* Custom Project Type */}
         {formData.projectType === 'Other' && (
           <div className="group">
             <label className="block text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-3 ml-1">
@@ -363,10 +443,38 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
         {/* Before Project Images */}
         <div className="group">
           <label className="block text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-3 ml-1">
-            BEFORE PROJECT IMAGES *
+            BEFORE PROJECT IMAGES
           </label>
 
-          {/* Upload Area */}
+          {/* Existing Images */}
+          {currentBeforeImages.length > 0 && (
+            <div className="mb-6">
+              <p className="text-xs text-foreground/50 mb-2">Current before images ({currentBeforeImages.length}):</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {currentBeforeImages.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className="relative group rounded-lg overflow-hidden border border-primary/15 hover:border-primary/40 transition-all duration-300"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Before ${index + 1}`}
+                      className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingBeforeImage(imageUrl)}
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
+                    >
+                      <Trash2 className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New Images Upload */}
           <div className="relative">
             <input
               type="file"
@@ -374,10 +482,10 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
               accept="image/*"
               onChange={handleBeforeImageChange}
               className="hidden"
-              id="before-image-upload"
+              id="edit-before-image-upload"
             />
             <label
-              htmlFor="before-image-upload"
+              htmlFor="edit-before-image-upload"
               className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 hover:bg-secondary/30 cursor-pointer transition-all duration-300 group"
             >
               <div className="text-center">
@@ -385,19 +493,19 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                   <Upload className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground mb-1">
-                  Click to upload or drag and drop
+                  Click to upload new before images
                 </p>
                 <p className="text-xs text-foreground/50">PNG, JPG, GIF up to 10MB each</p>
               </div>
             </label>
-            <p className="text-xs text-foreground/50 mt-2 ml-1">{beforeImages.length} files selected</p>
+            <p className="text-xs text-foreground/50 mt-2 ml-1">{beforeImages.length} new files selected</p>
           </div>
 
-          {/* Image Preview Grid */}
+          {/* New Image Previews */}
           {beforeImages.length > 0 && (
             <div className="mt-6">
               <p className="text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-4">
-                Before Images ({beforeImages.length})
+                New Before Images ({beforeImages.length})
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {beforeImages.map((image, index) => (
@@ -407,7 +515,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                   >
                     <img
                       src={image.preview}
-                      alt={`Preview ${index + 1}`}
+                      alt={`New preview ${index + 1}`}
                       className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <button
@@ -427,10 +535,38 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
         {/* After Project Images */}
         <div className="group">
           <label className="block text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-3 ml-1">
-            AFTER PROJECT IMAGES *
+            AFTER PROJECT IMAGES
           </label>
 
-          {/* Upload Area */}
+          {/* Existing Images */}
+          {currentAfterImages.length > 0 && (
+            <div className="mb-6">
+              <p className="text-xs text-foreground/50 mb-2">Current after images ({currentAfterImages.length}):</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {currentAfterImages.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className="relative group rounded-lg overflow-hidden border border-primary/15 hover:border-primary/40 transition-all duration-300"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`After ${index + 1}`}
+                      className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingAfterImage(imageUrl)}
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
+                    >
+                      <Trash2 className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New Images Upload */}
           <div className="relative">
             <input
               type="file"
@@ -438,10 +574,10 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
               accept="image/*"
               onChange={handleAfterImageChange}
               className="hidden"
-              id="after-image-upload"
+              id="edit-after-image-upload"
             />
             <label
-              htmlFor="after-image-upload"
+              htmlFor="edit-after-image-upload"
               className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 hover:bg-secondary/30 cursor-pointer transition-all duration-300 group"
             >
               <div className="text-center">
@@ -449,19 +585,19 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                   <Upload className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground mb-1">
-                  Click to upload or drag and drop
+                  Click to upload new after images
                 </p>
                 <p className="text-xs text-foreground/50">PNG, JPG, GIF up to 10MB each</p>
               </div>
             </label>
-            <p className="text-xs text-foreground/50 mt-2 ml-1">{afterImages.length} files selected</p>
+            <p className="text-xs text-foreground/50 mt-2 ml-1">{afterImages.length} new files selected</p>
           </div>
 
-          {/* Image Preview Grid */}
+          {/* New Image Previews */}
           {afterImages.length > 0 && (
             <div className="mt-6">
               <p className="text-xs font-semibold text-foreground/60 tracking-widest uppercase mb-4">
-                After Images ({afterImages.length})
+                New After Images ({afterImages.length})
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {afterImages.map((image, index) => (
@@ -471,7 +607,7 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
                   >
                     <img
                       src={image.preview}
-                      alt={`After preview ${index + 1}`}
+                      alt={`New after preview ${index + 1}`}
                       className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <button
@@ -506,10 +642,10 @@ export function AddProjectForm({ onClose }: { onClose: () => void }) {
           {isLoading ? (
             <span className="flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              Saving...
+              Updating...
             </span>
           ) : (
-            'Save Project'
+            'Update Project'
           )}
         </button>
       </div>

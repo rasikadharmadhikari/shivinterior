@@ -1,18 +1,120 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Plus, LogOut, Menu, X, Sparkles, ArrowRight, TrendingUp, Calendar, Zap, Settings, BarChart3 } from 'lucide-react';
+import { Plus, LogOut, Menu, X, Sparkles, ArrowRight, TrendingUp, Calendar, Zap, Settings, BarChart3, Edit2, Trash2, Loader } from 'lucide-react';
 import { AddProjectForm } from '@/pages/AddProjectForm';
+import { EditProjectForm } from '@/pages/EditProjectForm';
+import { ProjectDetailModal } from '@/pages/ProjectDetailModal';
 import { GSAPReveal } from '@/components/GSAPReveal';
 
 export function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingProject, setEditingProject] = useState<any>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailProject, setDetailProject] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+
+  // Fetch projects on component mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/projects');
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+        setProjects([]);
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  // Calculate stats
+  const totalProjects = projects.length;
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  const thisMonthProjects = projects.filter((project) => {
+    const projectDate = new Date(project.createdAt);
+    return projectDate.getMonth() === currentMonth && projectDate.getFullYear() === currentYear;
+  }).length;
 
   const handleLogout = () => {
     localStorage.removeItem('adminAuth');
     localStorage.removeItem('adminEmail');
     setLocation('/admin');
+  };
+
+  const handleDeleteProject = async (projectId: string, title: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"? This will permanently delete all images and cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
+    setDeletingProjectId(projectId);
+    
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        // Instantly remove from local state
+        setProjects(projects.filter(p => p._id !== projectId));
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        alert(`Failed to delete project: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setDeletingProjectId(null);
+    }
+  };
+
+  const handleEditProject = (projectId: string) => {
+    const project = projects.find(p => p._id === projectId);
+    if (project) {
+      setEditingProject(project);
+      setShowEditForm(true);
+    }
+  };
+
+  const handleEditProjectSuccess = (updatedProject: any) => {
+    // Update the project in the projects state array
+    setProjects((prevProjects) =>
+      prevProjects.map((p) =>
+        p._id === updatedProject._id ? updatedProject : p
+      )
+    );
+  };
+
+  const handleViewProject = (projectId: string) => {
+    const project = projects.find(p => p._id === projectId);
+    if (project) {
+      setDetailProject(project);
+      setShowDetailModal(true);
+    }
+  };
+
+  const handleDetailProjectNavigate = (projectId: string) => {
+    const project = projects.find(p => p._id === projectId);
+    if (project) {
+      setDetailProject(project);
+    }
   };
 
   const adminEmail = localStorage.getItem('adminEmail') || 'Admin';
@@ -123,8 +225,8 @@ export function AdminDashboard() {
               <div className="relative">
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { value: '0', label: 'Total', color: 'from-blue-500/20' },
-                    { value: '0', label: 'This Month', color: 'from-amber-500/20' },
+                    { value: totalProjects.toString(), label: 'Total', color: 'from-blue-500/20' },
+                    { value: thisMonthProjects.toString(), label: 'This Month', color: 'from-amber-500/20' },
                   ].map((stat, i) => (
                     <div key={i} className={`bg-gradient-to-br ${stat.color} to-transparent border border-primary/15 rounded-xl p-4 md:p-6 text-center`}>
                       <p className="text-2xl md:text-3xl font-display text-foreground mb-1">{stat.value}</p>
@@ -168,31 +270,23 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {[
               { 
                 label: 'Total Projects', 
-                value: '0', 
+                value: totalProjects.toString(), 
                 icon: BarChart3,
                 color: 'from-blue-500/10 to-blue-600/5',
                 iconColor: 'text-blue-500',
-                trend: '+0%'
+                trend: `+${totalProjects}`
               },
               { 
                 label: 'This Month', 
-                value: '0', 
+                value: thisMonthProjects.toString(), 
                 icon: Calendar,
                 color: 'from-amber-500/10 to-amber-600/5',
                 iconColor: 'text-amber-500',
-                trend: '+0%'
-              },
-              { 
-                label: 'Last Updated', 
-                value: 'Today', 
-                icon: Zap,
-                color: 'from-emerald-500/10 to-emerald-600/5',
-                iconColor: 'text-emerald-500',
-                trend: 'Live'
+                trend: `+${thisMonthProjects}`
               },
             ].map((stat, i) => {
               const IconComponent = stat.icon;
@@ -227,46 +321,145 @@ export function AdminDashboard() {
           </div>
         </GSAPReveal>
 
-        {/* Empty Projects State */}
-        <GSAPReveal delay={0.2}>
-          <div className="relative py-16 md:py-20 lg:py-24 px-6 md:px-8 bg-gradient-to-br from-secondary/20 to-secondary/5 border border-primary/10 rounded-2xl md:rounded-3xl text-center overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
-            
-            <div className="relative space-y-6">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                  <div className="relative text-5xl md:text-6xl animate-bounce">📁</div>
-                </div>
-              </div>
-              
+        {/* Projects List Section */}
+        <GSAPReveal delay={0.2} className="mb-12 md:mb-16">
+          <div className="space-y-4 md:space-y-6 mb-8">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-2xl md:text-3xl font-display tracking-wider text-foreground mb-3">No Projects Yet</h3>
-                <p className="text-foreground/60 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-                  Start building your portfolio by creating your first interior design project. Showcase your creative expertise and connect with potential clients.
-                </p>
+                <h3 className="text-lg md:text-xl font-display tracking-wider text-foreground mb-2">All Projects</h3>
+                <div className="h-1 w-8 md:w-12 bg-gradient-to-r from-primary to-primary/40" />
               </div>
-              
-              <div className="flex justify-center gap-2">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-2 h-2 bg-primary rounded-full animate-pulse"
-                    style={{ animationDelay: `${i * 200}ms` }}
-                  />
-                ))}
+              <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-primary/15 border border-primary/25 rounded-lg">
+                <span className="text-xs md:text-sm font-semibold text-primary">{totalProjects}</span>
               </div>
-
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="group inline-flex items-center gap-2 px-6 md:px-7 py-3 md:py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg md:rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 mt-6 tracking-wider uppercase text-sm"
-              >
-                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                <span>Create First Project</span>
-              </button>
             </div>
           </div>
+
+          {/* Loading State */}
+          {isLoadingProjects && (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Loader className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-sm text-foreground/60">Loading projects...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Projects List or Empty State */}
+          {!isLoadingProjects && projects.length === 0 ? (
+            // Show existing empty state when no projects
+            <div className="relative py-16 md:py-20 lg:py-24 px-6 md:px-8 bg-gradient-to-br from-secondary/20 to-secondary/5 border border-primary/10 rounded-2xl md:rounded-3xl text-center overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+              <div className="relative space-y-6">
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                    <div className="relative text-5xl md:text-6xl animate-bounce">📁</div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-display tracking-wider text-foreground mb-3">No Projects Yet</h3>
+                  <p className="text-foreground/60 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+                    Start building your portfolio by creating your first interior design project. Showcase your creative expertise and connect with potential clients.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="group inline-flex items-center gap-2 px-6 md:px-7 py-3 md:py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg md:rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 mt-6 tracking-wider uppercase text-sm"
+                >
+                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                  <span>Create First Project</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Projects List
+            <div className="space-y-3 md:space-y-4">
+              {projects.map((project, idx) => {
+                const projectDate = new Date(project.createdAt);
+                const formattedDate = projectDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                });
+
+                return (
+                  <div
+                    key={project._id}
+                    onClick={() => handleViewProject(project._id)}
+                    className="group relative flex items-center gap-4 md:gap-6 p-4 md:p-5 bg-gradient-to-r from-secondary/20 to-secondary/5 border border-primary/10 hover:border-primary/25 rounded-xl md:rounded-2xl transition-all duration-300 hover:shadow-md hover:shadow-primary/10 overflow-hidden animate-in fade-in slide-in-from-bottom-2 cursor-pointer"
+                    style={{
+                      animationDelay: `${300 + idx * 50}ms`,
+                      animationFillMode: 'both',
+                    }}
+                  >
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <div className="relative flex items-center gap-4 md:gap-6 flex-1 min-w-0">
+                      {/* Thumbnail */}
+                      <div className="flex-shrink-0">
+                        <img
+                          src={project.thumbnail}
+                          alt={project.title}
+                          className="w-20 h-20 md:w-24 md:h-24 rounded-lg object-cover border border-primary/15"
+                        />
+                      </div>
+
+                      {/* Project Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm md:text-base font-semibold text-foreground truncate mb-1 group-hover:text-primary transition-colors duration-300">
+                          {project.title}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 bg-primary/15 text-primary text-xs font-medium rounded border border-primary/25">
+                            {project.projectType || project.category || 'Project'}
+                          </span>
+                          {project.location && (
+                            <span className="text-xs md:text-sm text-foreground/60">
+                              📍 {project.location}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-foreground/50">
+                          Added {formattedDate}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="relative flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditProject(project._id);
+                        }}
+                        className="p-2 md:p-2.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 hover:text-amber-700 transition-all duration-300 hover:scale-105"
+                        title="Edit project"
+                      >
+                        <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProject(project._id, project.title);
+                        }}
+                        disabled={deletingProjectId === project._id}
+                        className="p-2 md:p-2.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-600 hover:text-red-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        title={deletingProjectId === project._id ? "Deleting..." : "Delete project"}
+                      >
+                        {deletingProjectId === project._id ? (
+                          <Loader className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </GSAPReveal>
 
         {/* Features Grid */}
@@ -305,6 +498,36 @@ export function AdminDashboard() {
             <AddProjectForm onClose={() => setShowAddForm(false)} />
           </div>
         </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {showEditForm && editingProject && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-300"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEditForm(false);
+            }
+          }}
+        >
+          <div className="bg-background rounded-2xl md:rounded-3xl border border-primary/15 shadow-2xl my-8 w-full max-w-2xl animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+            <EditProjectForm 
+              project={editingProject}
+              onClose={() => setShowEditForm(false)} 
+              onSuccess={handleEditProjectSuccess}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Project Detail Modal */}
+      {showDetailModal && detailProject && (
+        <ProjectDetailModal
+          project={detailProject}
+          projects={projects}
+          onClose={() => setShowDetailModal(false)}
+          onNavigate={handleDetailProjectNavigate}
+        />
       )}
     </div>
   );

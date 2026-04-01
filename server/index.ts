@@ -1,12 +1,24 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { config } from "dotenv";
 import cors from "cors";
+import mongoose from "mongoose";
 
 // Load environment variables from .env file
 config();
+
+if (process.env.MONGODB_URI) {
+  mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}
 
 const app = express();
 const httpServer = createServer(app);
