@@ -9,5 +9,8 @@ export function useProjects() {
       const data = await res.json();
       return Array.isArray(data) ? data : [];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
   });
 }

@@ -233,29 +233,33 @@ export default function Home() {
       {/* ── SELECTED PROJECTS ───────────────────────────────────── */}
       <section className="py-24 md:py-32 bg-card">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex justify-between items-end mb-16">
+          {/* Section Heading with Animated Underline */}
+          <div className="mb-16">
             <GSAPReveal>
               <p className="text-sm tracking-[0.3em] uppercase text-primary mb-3 flex items-center gap-3">
                 <span className="w-6 h-px bg-primary" />Our Work
               </p>
-              <h2 className="text-4xl md:text-5xl font-display">Selected Projects</h2>
-            </GSAPReveal>
-            <GSAPReveal delay={0.2}>
-              <Link href="/projects" className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest hover:text-primary transition group">
-                Explore All <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <h2 className="text-4xl md:text-5xl font-display">Selected Projects</h2>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    left: 0,
+                    height: '3px',
+                    backgroundColor: '#7B5E2A',
+                    animation: 'heading-underline-draw 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                  }}
+                />
+              </div>
             </GSAPReveal>
           </div>
 
-          {/* 4-Project Grid */}
+          {/* 3-Project Grid with Featured Card Design */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex flex-col">
-                  <div className="aspect-[3/4] bg-muted animate-pulse rounded-lg mb-4" />
-                  <div className="h-6 bg-muted rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-muted/60 rounded w-1/2" />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mb-16">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="aspect-[4/3] bg-muted animate-pulse rounded-[16px]" />
               ))}
             </div>
           ) : projects.length === 0 ? (
@@ -263,81 +267,32 @@ export default function Home() {
               <p className="text-muted-foreground text-lg">No projects added yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {projects.slice(0, 4).map((project, index) => (
-                <GSAPReveal key={project._id || index} delay={index * 0.1}>
-                  <div 
-                    onClick={() => setSelectedProject(project)}
-                    className="group flex flex-col h-full cursor-pointer"
-                  >
-                    {/* Thumbnail Container */}
-                    <div className="relative overflow-hidden rounded-lg mb-4 aspect-[3/4] bg-muted">
-                      <img
-                        src={project.thumbnail}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      {/* Overlay with icon on hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                          <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                            <ExternalLink className="w-6 h-6 text-white" />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Before/After Badge */}
-                      {(project.beforeImages?.length > 0 || project.afterImages?.length > 0) && (
-                        <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                          {(project.beforeImages?.length || 0) + (project.afterImages?.length || 0)} images
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Project Info */}
-                    <div className="border-b border-border pb-3">
-                      <h3 className="text-lg md:text-xl font-display leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
-                        {project.title}
-                      </h3>
-                      <p className="text-sm uppercase tracking-[0.15em] text-primary/80 mt-2">
-                        {project.projectType || 'Project'}
-                      </p>
-                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                        {project.location && (
-                          <>
-                            <span>📍 {project.location}</span>
-                            {project.year && <span> · {project.year}</span>}
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Description - Optional */}
-                    <p className="text-sm text-muted-foreground mt-3 line-clamp-2 flex-grow">
-                      {project.description}
-                    </p>
-                  </div>
-                </GSAPReveal>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mb-16">
+              {projects.slice(0, 3).map((project, index) => (
+                <FeaturedProjectCard
+                  key={project._id || index}
+                  project={project}
+                  index={index}
+                  onOpen={() => setSelectedProject(project)}
+                />
               ))}
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <div className="mt-14 flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/projects"
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-primary text-primary hover:bg-primary hover:text-primary-foreground uppercase tracking-widest text-sm font-semibold transition-all duration-300 group rounded-lg"
-            >
-              View All Projects
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-widest text-sm font-semibold transition-all duration-300 group rounded-lg"
-            >
-              Start Your Project
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+          {/* View All Projects Button */}
+          <div className="flex justify-center">
+            <GSAPReveal delay={0.5}>
+              <Link
+                href="/projects"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-primary text-primary hover:bg-primary hover:text-primary-foreground uppercase tracking-widest text-sm font-semibold transition-all duration-300 group rounded-lg"
+                style={{
+                  animation: 'card-enter 600ms ease-out 500ms both',
+                }}
+              >
+                View All Projects
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </GSAPReveal>
           </div>
         </div>
       </section>
@@ -384,6 +339,151 @@ export default function Home() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+/* Featured Project Card Component */
+function FeaturedProjectCard({
+  project,
+  index,
+  onOpen,
+}: {
+  project: any;
+  index: number;
+  onOpen: () => void;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+    cardRef.current.style.animation = `card-enter 500ms ease-out ${80 * index}ms forwards`;
+  }, [index]);
+
+  const year = project.year || (project.createdAt ? new Date(project.createdAt).getFullYear() : "-");
+  const number = String(index + 1).padStart(2, "0");
+
+  return (
+    <div
+      ref={cardRef}
+      className="project-card"
+      data-card
+      data-index={index}
+      style={{
+        aspectRatio: "4/3",
+        opacity: 0,
+        transform: 'translateY(40px)',
+      }}
+      onClick={onOpen}
+    >
+      {/* Thumbnail with zoom effect */}
+      <img
+        src={project.thumbnail}
+        alt={project.title}
+        loading="lazy"
+        className="thumbnail"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+      />
+
+      {/* Overlay Animation */}
+      <div className="card-overlay" />
+
+      {/* Card Content */}
+      <div className="card-content">
+        {/* Top left: Project number + Location & year */}
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 5,
+        }}>
+          <span style={{
+            display: 'block',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+            color: '#7B5E2A',
+            fontWeight: 600,
+            marginBottom: '6px',
+          }}>
+            {number}
+          </span>
+          <p style={{
+            fontSize: '11px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.8px',
+            color: '#7B5E2A',
+            fontWeight: 600,
+            margin: 0,
+          }}>
+            {project.location}·{year}
+          </p>
+        </div>
+
+        {/* Center: Title with animation */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '20px',
+          right: '20px',
+          transform: 'translateY(-50%)',
+          zIndex: 5,
+        }}>
+          <h3 style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: '24px',
+            color: 'white',
+            fontWeight: 400,
+            margin: 0,
+            lineHeight: '1.2',
+          }}>
+            {project.title}
+          </h3>
+          <div className="card-gold-line" style={{ marginTop: '12px' }} />
+        </div>
+
+        {/* Bottom: Button (left) and Badge (right) */}
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          right: '20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          zIndex: 5,
+        }}>
+          {/* View Button */}
+          <button
+            className="card-view-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen();
+            }}
+          >
+            View Project →
+          </button>
+
+          {/* Project type badge - bottom right */}
+          <div style={{
+            padding: '7px 14px',
+            borderRadius: '22px',
+            background: 'rgba(123, 94, 42, 0.9)',
+            border: '1px solid rgba(245, 237, 216, 0.3)',
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.6px',
+            color: '#F5EDD8',
+          }}>
+            {project.projectType}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

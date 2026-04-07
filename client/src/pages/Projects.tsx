@@ -1,11 +1,10 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { GSAPReveal } from "@/components/GSAPReveal";
-import { ArrowRight, Images } from "lucide-react";
 import { clsx } from "clsx";
-import { Link } from "wouter";
 import { ProjectDetailModal } from "@/pages/ProjectDetailModal";
 
-type Category = "All" | "Residential" | "Commercial";
+type Category = "ALL" | "RESIDENTIAL" | "COMMERCIAL" | "INDUSTRIAL";
+
 interface ProjectCardData {
   _id: string;
   title: string;
@@ -25,80 +24,145 @@ interface ProjectDetails extends ProjectCardData {
 
 
 /* ═══════════════════════════════════════════
-   PROJECT CARD  (uniform 4:3 aspect, click opens gallery)
+   PROJECT CARD WITH ANIMATIONS
 ═══════════════════════════════════════════ */
 function ProjectCard({
   project,
   index,
+  isVisible,
   onOpen,
+  staggerDelay,
 }: {
   project: ProjectCardData;
   index: number;
+  isVisible: boolean;
   onOpen: (projectId: string) => void;
+  staggerDelay: number;
 }) {
-  const tagCls = "bg-black/55 text-white backdrop-blur-sm";
+  const cardRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    if (isVisible && !hasAnimated.current) {
+      hasAnimated.current = true;
+      cardRef.current.style.opacity = '1';
+      cardRef.current.style.animation = `card-enter 600ms ease-out ${staggerDelay}ms forwards`;
+      cardRef.current.classList.add('card-animate-in');
+    }
+  }, [isVisible, staggerDelay]);
+
   const year = project.year || (project.createdAt ? new Date(project.createdAt).getFullYear() : "-");
+  const number = String(index + 1).padStart(2, "0");
 
   return (
     <div
-      className="group relative overflow-hidden bg-zinc-900 cursor-pointer"
+      ref={cardRef}
+      className="project-card"
+      data-card
+      data-index={index}
+      style={{
+        aspectRatio: "4/3",
+        opacity: 0,
+        transform: 'translateY(40px)',
+      }}
       onClick={() => onOpen(project._id)}
     >
-      {/* Cover image — fixed 16:9 aspect, uniform across all cards */}
-      <div className="relative w-full aspect-[16/9] overflow-hidden">
-        <img
-          src={project.thumbnail}
-          alt={project.title}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-        />
-        {/* Permanent bottom vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent pointer-events-none" />
+      {/* Thumbnail with zoom effect */}
+      <img
+        src={project.thumbnail}
+        alt={project.title}
+        loading="lazy"
+        className="thumbnail"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+      />
 
-        {/* Photo count pill — bottom right */}
-        <span className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5
-          bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2.5 py-1 rounded-full
-          opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <Images className="w-3 h-3" />
-          View
+      {/* Overlay Animation */}
+      <div className="card-overlay" />
+
+      {/* Card Content */}
+      <div className="card-content">
+        {/* Project number - top left */}
+        <span style={{
+          position: 'absolute',
+          top: '12px',
+          left: '12px',
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '2px',
+          color: '#7B5E2A',
+          fontWeight: 600,
+        }}>
+          {number}
         </span>
-      </div>
 
-      {/* Index */}
-      <span className="absolute top-3 left-3 z-10 text-xs font-mono tracking-widest text-white/60">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-
-      {/* Tag */}
-      <span className={clsx("absolute top-3 right-3 z-10 text-xs font-bold uppercase tracking-widest px-2.5 py-1", tagCls)}>
-        {project.projectType}
-      </span>
-
-      {/* Rest-state label */}
-      <div className="absolute bottom-0 inset-x-0 px-5 py-5 group-hover:opacity-0 transition-opacity duration-250 z-10">
-        <p className="text-sm uppercase tracking-widest text-primary font-semibold mb-1.5">{project.location} · {year}</p>
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="font-display text-white text-2xl md:text-3xl leading-tight">{project.title}</h3>
-          <span className="text-xs text-white/50 uppercase tracking-wider flex-shrink-0 md:hidden">
-            View <span className="text-primary">↗</span>
-          </span>
+        {/* Project type badge - top right */}
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          padding: '6px 12px',
+          borderRadius: '20px',
+          background: 'rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          fontSize: '11px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: 'white',
+        }}>
+          {project.projectType}
         </div>
-      </div>
 
-      {/* Hover overlay */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-end px-4 pb-4 pt-12
-          bg-gradient-to-t from-black/95 via-black/60 to-transparent
-          opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0
-          transition-all duration-400 ease-out">
-        <div className="w-8 h-[2px] bg-primary mb-3" />
-        <h3 className="font-display text-white text-xl md:text-2xl leading-tight mb-2">{project.title}</h3>
-        <p className="text-white/75 text-sm leading-relaxed line-clamp-2 mb-3">{project.description}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-wider text-primary font-medium">{project.location} · {project.projectType}</span>
-          <span className="text-xs text-white/60 uppercase tracking-wider flex items-center gap-1 font-medium">
-            Open Details
-            <span className="text-primary text-base">↗</span>
-          </span>
+        {/* Bottom info section */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '20px',
+        }}>
+          {/* Location and year */}
+          <p style={{
+            fontSize: '11px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.8px',
+            color: '#7B5E2A',
+            fontWeight: 600,
+            margin: '0 0 8px 0',
+          }}>
+            {project.location}·{year}
+          </p>
+
+          {/* Title with underline animation */}
+          <h3 style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: '18px',
+            color: 'white',
+            fontWeight: 400,
+            margin: 0,
+            marginBottom: '8px',
+          }}>
+            {project.title}
+          </h3>
+          <div className="card-gold-line" />
+
+          {/* View Button */}
+          <button
+            className="card-view-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(project._id);
+            }}
+          >
+            View Project →
+          </button>
         </div>
       </div>
     </div>
@@ -106,15 +170,21 @@ function ProjectCard({
 }
 
 /* ═══════════════════════════════════════════
-   MAIN PAGE
+   MAIN PROJECTS PAGE
 ═══════════════════════════════════════════ */
 export default function Projects() {
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [activeFilter, setActiveFilter] = useState<Category>("ALL");
   const [projects, setProjects] = useState<ProjectCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
+  const [visibleCardIndices, setVisibleCardIndices] = useState<Set<number>>(new Set());
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  const filters: Category[] = ["ALL", "RESIDENTIAL", "COMMERCIAL", "INDUSTRIAL"];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -135,6 +205,49 @@ export default function Projects() {
     void loadProjects();
   }, []);
 
+  // Intersection Observer for card animations
+  useEffect(() => {
+    if (!cardsContainerRef.current || projects.length === 0) return;
+
+    const cards = cardsContainerRef.current.querySelectorAll("[data-card]");
+    if (cards.length === 0) return;
+
+    // Check if IntersectionObserver is supported
+    if (!('IntersectionObserver' in window)) {
+      // Fallback: make all cards visible immediately
+      cards.forEach((card, index) => {
+        setVisibleCardIndices((prev) => new Set([...prev, index]));
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt((entry.target as HTMLElement).dataset.index || "0", 10);
+            setVisibleCardIndices((prev) => new Set([...prev, index]));
+            // Stop observing once visible to improve performance
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -50px 0px" }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => {
+      cards.forEach((card) => observer.unobserve(card));
+      observer.disconnect();
+    };
+  }, [projects.length, activeFilter]);
+
+  const filteredProjects =
+    activeFilter === "ALL"
+      ? projects
+      : projects.filter((p) => p.projectType.toUpperCase() === activeFilter);
+
   const openProjectModal = useCallback(async (projectId: string) => {
     try {
       const response = await fetch(`/api/projects/${projectId}`);
@@ -152,40 +265,42 @@ export default function Projects() {
 
   const closeProjectModal = useCallback(() => setSelectedProject(null), []);
 
-  const handleNavigateProject = useCallback((projectId: string) => {
-    const found = projects.find(p => p._id === projectId);
-    if (found) {
-      openProjectModal(projectId);
-    }
-  }, [projects, openProjectModal]);
+  const handleFilterChange = (filter: Category) => {
+    setActiveFilter(filter);
+    setVisibleCardIndices(new Set());
+  };
 
-  const visible = projects.filter(
-    p => activeCategory === "All" || p.projectType === activeCategory
+  const handleNavigateProject = useCallback(
+    (projectId: string) => {
+      openProjectModal(projectId);
+    },
+    [openProjectModal]
   );
 
   return (
-    <div className="w-full min-h-screen bg-[#0f0f0f] text-white">
-
-      {/* ══ HERO ══ */}
+    <div className="w-full min-h-screen bg-[#0F0F0F] text-white">
+      {/* ══ HERO SECTION ══ */}
       <section className="relative flex items-center overflow-hidden min-h-[92vh]">
-        {/* Full-bleed background */}
-        <img src="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1920" alt=""
-          className="absolute inset-0 w-full h-full object-cover" />
-        {/* Overlays */}
+        <img
+          src="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1920"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         <div className="absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent" />
 
-        {/* Gold vertical accent line */}
-        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-primary/70 to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-[#7B5E2A]/70 to-transparent" />
 
-        {/* Text content */}
         <div className="relative z-10 px-8 md:px-14 lg:px-20 py-28 max-w-2xl">
           <GSAPReveal>
-           
-            <h1 className="font-display leading-[0.88] mb-8">
-              <span className="block text-white text-7xl md:text-8xl lg:text-[100px] xl:text-[120px]">Our</span>
-              <span className="block italic text-primary text-8xl md:text-9xl lg:text-[112px] xl:text-[136px]">Work</span>
+            <h1 className="font-serif leading-[0.88] mb-8">
+              <span className="block text-white text-7xl md:text-8xl lg:text-[100px] xl:text-[120px]">
+                Our
+              </span>
+              <span className="block italic text-[#7B5E2A] text-8xl md:text-9xl lg:text-[112px] xl:text-[136px]">
+                Work
+              </span>
             </h1>
             <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-sm mb-10">
               Commercial, residential &amp; industrial interiors — crafted with precision and purpose.
@@ -195,90 +310,80 @@ export default function Projects() {
             </p>
           </GSAPReveal>
         </div>
-
       </section>
 
-      {/* ══ STICKY FILTER BAR ══ */}
-      <div className="sticky top-0 z-50 bg-[#0f0f0f]/96 backdrop-blur-md border-b border-white/8">
-        <div className="container mx-auto px-5 md:px-14 flex items-center justify-between py-3">
-          <p className="text-sm uppercase tracking-widest text-white/50 hidden md:block font-medium">
-            {visible.length} project{visible.length !== 1 ? "s" : ""}
-          </p>
-          <div className="flex gap-1 ml-auto">
-            {(["All", "Residential", "Commercial"] as Category[]).map(cat => (
+      {/* ══ PROJECTS SECTION ══ */}
+      <section className="relative px-6 md:px-12 lg:px-20 py-24 bg-[#0F0F0F]">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Heading with Count Badge */}
+          <div className="mb-16 flex items-center gap-4">
+            <h2 className="font-serif text-4xl md:text-5xl text-white">Our Projects</h2>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#7B5E2A] text-white text-sm font-bold">
+              {filteredProjects.length}
+            </div>
+            <div className="flex-grow h-px bg-gradient-to-r from-[#7B5E2A] to-transparent" />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="mb-16 flex flex-wrap gap-3">
+            {filters.map((filter) => (
               <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
+                key={filter}
+                onClick={() => handleFilterChange(filter)}
                 className={clsx(
-                  "px-5 py-2.5 text-sm uppercase tracking-widest font-medium transition-all duration-250",
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                  "px-6 py-2.5 rounded-full uppercase text-xs font-bold tracking-wider transition-all duration-300 ease-out",
+                  activeFilter === filter
+                    ? "bg-[#7B5E2A] text-[#F5EDD8]"
+                    : "bg-transparent border border-[#7B5E2A] text-[#7B5E2A] hover:bg-[#7B5E2A]/10"
                 )}
               >
-                {cat}
-                <span className="ml-1.5 opacity-60">
-                  ({cat === "All" ? projects.length : projects.filter(p => p.projectType === cat).length})
-                </span>
+                {filter}
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* ══ PROJECT GRID ══ */}
-      <section className="bg-[#0f0f0f] px-2 md:px-3 pt-3 pb-12">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-56">
-            <p className="text-white/30 text-sm uppercase tracking-widest">Loading projects...</p>
-          </div>
-        ) : visible.length === 0 ? (
-          <div className="flex items-center justify-center h-56">
-            <p className="text-white/20 text-sm uppercase tracking-widest">No projects in this category</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
-            {visible.map((project, i) => (
-              <GSAPReveal key={project._id} delay={(i % 4) * 0.05}>
-                <ProjectCard project={project} index={i} onOpen={openProjectModal} />
-              </GSAPReveal>
-            ))}
-          </div>
-        )}
-      </section>
+          {/* Projects Grid */}
+          {isLoading ? (
+            <div className="text-center py-20 text-white/50">Loading projects...</div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-20 text-white/50">No projects found</div>
+          ) : (
+            <div
+              ref={cardsContainerRef}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"
+            >
+              {filteredProjects.map((project, index) => {
+                const rowIndex = Math.floor(index / 3);
+                const colIndex = index % 3;
+                const staggerDelay = (rowIndex === 0 ? colIndex : colIndex) * 100;
+                const isVisible = visibleCardIndices.has(index);
 
-      {/* ══ CONTACT CTA STRIP ══ */}
-      <section className="relative overflow-hidden min-h-[55vh] flex items-center justify-center text-center">
-        {/* Full-bleed background */}
-        <img src="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1920"
-          alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/60" />
-
-        <div className="relative z-10 px-6 md:px-14 py-24 max-w-3xl mx-auto">
-          <GSAPReveal>
-            <h3 className="font-display leading-[0.92] mb-6">
-              <span className="block text-white text-5xl md:text-6xl lg:text-7xl">Let's Build Something</span>
-              <span className="block italic text-primary text-6xl md:text-7xl lg:text-8xl">Beautiful Together</span>
-            </h3>
-            <p className="text-white/65 text-base md:text-lg leading-relaxed mb-10 max-w-lg mx-auto">
-              Share your vision with us — we'll handle everything from design to delivery.
-            </p>
-            <Link href="/contact"
-              className="inline-flex items-center gap-3 px-12 py-4 bg-primary text-primary-foreground
-                text-sm uppercase tracking-widest font-semibold
-                hover:bg-white hover:text-black transition-all duration-300 group">
-              Contact Us
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
-          </GSAPReveal>
+                return (
+                  <div
+                    key={project._id}
+                    data-card
+                    data-index={index}
+                  >
+                    <ProjectCard
+                      project={project}
+                      index={index}
+                      isVisible={isVisible}
+                      onOpen={openProjectModal}
+                      staggerDelay={staggerDelay}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ══ PROJECT MODAL ══ */}
+      {/* Project Detail Modal */}
       {selectedProject && (
         <ProjectDetailModal
           project={selectedProject}
-          projects={projects}
+          projects={filteredProjects}
           onClose={closeProjectModal}
           onNavigate={handleNavigateProject}
         />
