@@ -11,6 +11,7 @@ import { Home as HomeIcon, Lamp, Sofa } from "lucide-react";
 // Components
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 // Pages
 import Home from "@/pages/Home";
@@ -115,6 +116,7 @@ function Router() {
                 </Switch>
               </main>
               <Footer />
+              <WhatsAppChat />
             </>
           )}
         </Route>
