@@ -78,7 +78,7 @@ export function ProjectDetailModal({ project, projects, onClose, onNavigate }: P
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px',
+          padding: window.innerWidth < 640 ? '12px' : '20px',
           boxSizing: 'border-box',
         }}
         onClick={handleOverlayClick}
@@ -87,12 +87,12 @@ export function ProjectDetailModal({ project, projects, onClose, onNavigate }: P
         <div
           ref={modalRef}
           style={{
-            width: '92vw',
+            width: window.innerWidth < 640 ? '95vw' : '92vw',
             maxWidth: '1160px',
-            maxHeight: '92vh',
+            maxHeight: '95vh',
             overflowY: 'auto',
             background: '#F8F4EE',
-            borderRadius: '24px',
+            borderRadius: '20px',
             position: 'relative',
             margin: 'auto',
             animation: 'modalEnter 550ms cubic-bezier(0.16,1,0.3,1) forwards',
@@ -101,13 +101,13 @@ export function ProjectDetailModal({ project, projects, onClose, onNavigate }: P
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* HERO SECTION - 380px */}
+          {/* HERO SECTION - Responsive Height */}
           <div
             style={{
               position: 'relative',
-              height: '380px',
+              height: window.innerWidth < 640 ? '280px' : window.innerWidth < 1024 ? '320px' : '380px',
               overflow: 'hidden',
-              borderRadius: '24px 24px 0 0',
+              borderRadius: '20px 20px 0 0',
               background: '#1a1a1a',
             }}
           >

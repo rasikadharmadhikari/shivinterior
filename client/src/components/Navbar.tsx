@@ -115,17 +115,15 @@ export function Navbar() {
           mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         )}
       >
+        {/* Semi-transparent background backdrop */}
         <div
-          className={cn(
-            "absolute inset-0 bg-transparent",
-            mobileMenuOpen ? "opacity-100" : "opacity-0"
-          )}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
         <nav
           className={cn(
-            "absolute top-0 right-0 h-full w-[82%] max-w-sm bg-transparent text-white px-6 pt-24 pb-10 flex flex-col items-end gap-8 transition-transform duration-500 ease-in-out",
+            "absolute top-0 right-0 h-screen w-[85%] max-w-xs bg-gradient-to-b from-foreground to-foreground/95 text-white px-6 pt-32 pb-10 flex flex-col items-end gap-8 transition-transform duration-500 ease-in-out shadow-2xl",
             mobileMenuOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
@@ -134,7 +132,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               className={cn(
-                "text-3xl font-display transition-colors duration-300 text-right w-full",
+                "text-2xl sm:text-3xl font-display transition-colors duration-300 text-right w-full py-2",
                 location === link.href ? "text-primary font-bold" : "text-white hover:text-primary"
               )}
             >

@@ -161,7 +161,7 @@ export default function Contact() {
     <div className="w-full min-h-screen bg-background">
 
       {/* HERO BANNER */}
-      <section className="relative h-[52vh] min-h-[340px] flex items-end overflow-hidden">
+      <section className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] min-h-[320px] sm:min-h-[380px] flex items-end overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center scale-105"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1920&fit=crop')" }}
@@ -169,12 +169,12 @@ export default function Contact() {
         <div className="absolute inset-0 bg-foreground/55" />
         <div className="absolute inset-0 bg-gradient-to-b from-foreground/70 via-foreground/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/40 to-transparent" />
-        <div className="relative z-10 container mx-auto px-6 md:px-12 pb-12 md:pb-16">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-12 pb-8 sm:pb-12 md:pb-16 lg:pb-20">
           <GSAPReveal>
-            <p className="text-xs tracking-[0.3em] uppercase text-primary mb-3 font-medium">
+            <p className="text-xs sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase text-primary mb-3 font-medium">
               Get In Touch
             </p>
-            <h1 className="text-5xl md:text-7xl font-display text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display text-white leading-tight">
               Let's Build<br />
               <span className="italic text-primary/90">Something</span> Beautiful
             </h1>
@@ -184,16 +184,16 @@ export default function Contact() {
 
       {/* STATS STRIP */}
       <section className="bg-foreground text-background">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-3 divide-x divide-background/10">
+        <div className="container mx-auto px-4 sm:px-6 md:px-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-background/10">
             {[
               { num: 20,  suffix: "+", label: "Years of Experience" },
               { num: 200, suffix: "+", label: "Projects Delivered" },
               { num: 100, suffix: "%", label: "Turnkey Solutions" },
             ].map((stat, i) => (
-              <div key={i} className="py-6 px-4 md:px-10 text-center group">
-                <AnimatedCounter value={stat.num} suffix={stat.suffix} className="text-2xl md:text-3xl font-display text-primary block" />
-                <p className="text-[11px] uppercase tracking-widest text-background/60 mt-1">{stat.label}</p>
+              <div key={i} className="py-5 sm:py-6 md:py-8 lg:py-10 px-4 sm:px-6 md:px-10 text-center group">
+                <AnimatedCounter value={stat.num} suffix={stat.suffix} className="text-2xl sm:text-2xl md:text-3xl font-display text-primary block" />
+                <p className="text-[10px] sm:text-[11px] uppercase tracking-widest text-background/60 mt-1">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -201,42 +201,42 @@ export default function Contact() {
       </section>
 
       {/* MAIN CONTENT */}
-      <section className="py-20 md:py-28">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 items-start">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-28">
+        <div className="container mx-auto px-4 sm:px-6 md:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-start">
 
             {/* LEFT: INFO PANEL */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-5 sm:space-y-6">
               <GSAPReveal>
-                <p className="text-muted-foreground leading-relaxed mb-8">
+                <p className="text-muted-foreground leading-relaxed mb-6 sm:mb-8 text-sm sm:text-base">
                   Ready to transform your space? Share your requirements and our
                   design consultants will connect with you within 24 hours.
                 </p>
               </GSAPReveal>
 
               <GSAPReveal delay={0.1}>
-                <a href="tel:09370455666" className="group flex items-start gap-5 p-5 border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition">
-                  <div className="w-10 h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition">
-                    <Phone className="w-4 h-4" />
+                <a href="tel:09370455666" className="group flex items-start gap-4 sm:gap-5 p-4 sm:p-5 border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition">
+                    <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Call Us</p>
-                    <p className="font-medium text-foreground">09370455666</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Call Us</p>
+                    <p className="font-medium text-foreground text-sm sm:text-base">09370455666</p>
                     
                   </div>
-                  <ArrowRight className="w-4 h-4 ml-auto self-center opacity-0 group-hover:opacity-100 text-primary transition" />
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-auto self-center opacity-0 group-hover:opacity-100 text-primary transition" />
                 </a>
               </GSAPReveal>
 
               <GSAPReveal delay={0.2}>
-                <div className="flex items-start gap-5 p-5 border border-border bg-card">
-                  <div className="w-10 h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary">
-                    <MapPin className="w-4 h-4" />
+                <div className="flex items-start gap-4 sm:gap-5 p-4 sm:p-5 border border-border bg-card">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Visit Us</p>
-                    <p className="font-medium text-foreground">21 Prasad Chambers, Karve Road</p>
-                    <p className="text-sm text-muted-foreground">Pune – 411004</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Visit Us</p>
+                    <p className="font-medium text-foreground text-sm sm:text-base">21 Prasad Chambers, Karve Road</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Pune – 411004</p>
                   </div>
                 </div>
               </GSAPReveal>
@@ -250,17 +250,17 @@ export default function Contact() {
                   href="https://www.facebook.com/share/16yjiLwBC4/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start gap-5 p-5 border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition"
+                  className="group flex items-start gap-4 sm:gap-5 p-4 sm:p-5 border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition"
                 >
-                  <div className="w-10 h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition">
-                    <Facebook className="w-4 h-4" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition">
+                    <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Follow Us</p>
-                    <p className="font-medium text-foreground">SHIV INTERIORS</p>
-                    <p className="text-sm text-muted-foreground">Facebook Page</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Follow Us</p>
+                    <p className="font-medium text-foreground text-sm sm:text-base">SHIV INTERIORS</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Facebook Page</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 ml-auto self-center opacity-0 group-hover:opacity-100 text-primary transition" />
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-auto self-center opacity-0 group-hover:opacity-100 text-primary transition" />
                 </a>
               </GSAPReveal>
             </div>
@@ -269,14 +269,14 @@ export default function Contact() {
             <div className="lg:col-span-3">
               <GSAPReveal delay={0.2}>
                 <div className="relative">
-                  <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-                  <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
-                  <div className="relative bg-card/90 border border-border backdrop-blur-sm p-6 md:p-10 overflow-hidden">
-                    <div className="h-1.5 w-24 bg-gradient-to-r from-primary via-primary/60 to-transparent mb-4" />
-                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-7">
+                  <div className="absolute -top-8 -right-8 w-32 sm:w-36 h-32 sm:h-36 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-24 sm:w-32 h-24 sm:h-32 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
+                  <div className="relative bg-card/90 border border-border backdrop-blur-sm p-5 sm:p-6 md:p-8 lg:p-10 overflow-hidden">
+                    <div className="h-1 sm:h-1.5 w-16 sm:w-24 bg-gradient-to-r from-primary via-primary/60 to-transparent mb-4 sm:mb-4" />
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-7">
                       <div>
-                        <h2 className="text-3xl font-display mb-1">Tell Us About Your Project</h2>
-                        <p className="text-muted-foreground text-sm md:text-base">
+                        <h2 className="text-2xl sm:text-3xl font-display mb-1 sm:mb-2">Tell Us About Your Project</h2>
+                        <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
                           Guided 5-step planner. Most clients finish this in under 60 seconds.
                         </p>
                       </div>
@@ -285,12 +285,12 @@ export default function Contact() {
                       </div>
                     </div>
 
-                    <div className="mb-8">
-                      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                    <div className="mb-6 sm:mb-8">
+                      <div className="flex items-center justify-between text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
                         <span>Progress</span>
                         <span>{progressPercentage}%</span>
                       </div>
-                      <div className="h-2 bg-background border border-border rounded-full overflow-hidden">
+                      <div className="h-1.5 sm:h-2 bg-background border border-border rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-primary to-foreground transition-all duration-500"
                           style={{ width: `${progressPercentage}%` }}
@@ -325,10 +325,10 @@ export default function Contact() {
                       {currentStep === 1 && (
                         <div className="space-y-5">
                           <div>
-                            <h3 className="text-2xl font-display mb-1">Step 1: Project Intent</h3>
-                            <p className="text-muted-foreground">What kind of support are you looking for right now?</p>
+                            <h3 className="text-xl sm:text-2xl font-display mb-1">Step 1: Project Intent</h3>
+                            <p className="text-muted-foreground text-sm">What kind of support are you looking for right now?</p>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             {serviceOptions.map((opt) => (
                               <button
                                 key={opt.value}
