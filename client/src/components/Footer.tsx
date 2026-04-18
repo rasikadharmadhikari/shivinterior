@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer className="relative bg-foreground text-background overflow-hidden">
 
-      {/* Animated gold top accent line */}
+      {/* Animated gold top accent line - positioned below content on mobile */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
 
       {/* Decorative spinning rings */}
@@ -46,14 +46,22 @@ export function Footer() {
                   />
                   
                   {/* Main circular image */}
-                  <div className="relative overflow-hidden rounded-full border-4 border-primary/60 w-32 h-32 md:w-40 md:h-40 shadow-2xl flex-shrink-0 bg-gradient-to-br from-secondary/50 to-secondary/20 flex items-center justify-center transition-all duration-500 group-hover:shadow-primary/40 group-hover:shadow-xl">
+                  <div className="relative overflow-hidden rounded-full border-4 border-primary/60 w-32 h-32 md:w-40 md:h-40 shadow-2xl flex-shrink-0 bg-gradient-to-br from-secondary/50 to-secondary/20 flex items-center justify-center transition-all duration-500 group-hover:shadow-primary/40 group-hover:shadow-xl"
+                    style={{
+                      isolation: 'isolate',
+                      position: 'relative',
+                      zIndex: 10
+                    }}
+                  >
                     <img 
                       src="/site-photos/shivphotomodified.png" 
                       alt="Shiv Interior Design" 
-                      className="w-full h-full object-contain p-2 transition-all duration-500 ease-out group-hover:scale-105"
+                      className="w-full h-full object-contain p-2 transition-all duration-500 ease-out group-hover:scale-105 block"
                       style={{
                         filter: isImageHovered ? 'brightness(1.05) contrast(1.1)' : 'brightness(1) contrast(1)',
-                        transform: isImageHovered ? 'scale(1.05)' : 'scale(1)'
+                        transform: isImageHovered ? 'scale(1.05)' : 'scale(1)',
+                        borderRadius: 'inherit',
+                        backfaceVisibility: 'hidden',
                       }}
                     />
                   </div>
